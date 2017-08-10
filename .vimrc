@@ -326,6 +326,9 @@ set autoread
 "" Mappings
 "*****************************************************************************
 
+"" ESC
+imap jj <ESC>
+
 "" Split
 noremap <Leader>h :<C-u>split<CR>
 noremap <Leader>v :<C-u>vsplit<CR>
@@ -419,6 +422,10 @@ if has('macunix')
   vmap <C-x> :!pbcopy<CR>
   vmap <C-c> :w !pbcopy<CR><CR>
 endif
+
+nnoremap <F5> :set invpaste paste?<CR>
+set pastetoggle=<F5>
+set showmode
 
 "" Buffer nav
 noremap <leader>z :bp<CR>
