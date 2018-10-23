@@ -1,4 +1,4 @@
-" vim-bootstrap 32075a8
+" vim-bootstrap 19c78f6
 
 "*****************************************************************************
 "" Vim-PLug core
@@ -9,7 +9,7 @@ endif
 
 let vimplug_exists=expand('~/.vim/autoload/plug.vim')
 
-let g:vim_bootstrap_langs = "javascript,go"
+let g:vim_bootstrap_langs = "go,python"
 let g:vim_bootstrap_editor = "vim"				" nvim or vim
 
 if !filereadable(vimplug_exists)
@@ -32,7 +32,9 @@ call plug#begin(expand('~/.vim/plugged'))
 "" Plug install packages
 "*****************************************************************************
 Plug 'scrooloose/nerdtree'
-Plug 'jistr/vim-nerdtree-tabs'
+" Plug 'jistr/vim-nerdtree-tabs'
+Plug 'christoomey/vim-tmux-runner'
+Plug 'tpope/vim-dispatch'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-fugitive'
 Plug 'vim-airline/vim-airline'
@@ -86,10 +88,13 @@ Plug 'tomasr/molokai'
 Plug 'fatih/vim-go', {'do': ':GoInstallBinaries'}
 
 
-" javascript
-"" Javascript Bundle
-Plug 'jelera/vim-javascript-syntax'
-
+" python
+"" Python Bundle
+Plug 'davidhalter/jedi-vim'
+Plug 'raimon49/requirements.txt.vim', {'for': 'requirements'}
+Plug 'JamshedVesuna/vim-markdown-preview'
+Plug 'heavenshell/vim-pydocstring'
+Plug 'janko-m/vim-test'
 
 "*****************************************************************************
 "*****************************************************************************
@@ -252,6 +257,10 @@ cnoreabbrev W w
 cnoreabbrev Q q
 cnoreabbrev Qall qall
 
+"" PydocString custom templates
+
+let g:pydocstring_templates_dir = '~/.vim/custom/vim-pydocstring/templates/pydocstring'
+
 "" NERDTree configuration
 let g:NERDTreeChDirMode=2
 let g:NERDTreeIgnore=['\.rbc$', '\~$', '\.pyc$', '\.db$', '\.sqlite$', '__pycache__']
@@ -262,10 +271,11 @@ let g:NERDTreeMapOpenInTabSilent = '<RightMouse>'
 let g:NERDTreeWinSize = 50
 set wildignore+=*/tmp/*,*.so,*.swp,*.zip,*.pyc,*.db,*.sqlite
 nnoremap <silent> <F2> :NERDTreeFind<CR>
-noremap <F3> :NERDTreeToggle<CR>
+nnoremap <silent> <F3> :NERDTreeToggle<CR>
 
 " grep.vim
-nnoremap <silent> <leader>f :Rgrep<CR>
+" :Find uses rg - so way faster
+nnoremap <silent> <leader>f :Find<CR>
 let Grep_Default_Options = '-IR'
 let Grep_Skip_Files = '*.log *.db'
 let Grep_Skip_Dirs = '.git node_modules'
@@ -288,7 +298,7 @@ if !exists('*s:setupWrapping')
   function s:setupWrapping()
     set wrap
     set wm=2
-    set textwidth=79
+    set textwidth=0
   endfunction
 endif
 
@@ -325,9 +335,6 @@ set autoread
 "*****************************************************************************
 "" Mappings
 "*****************************************************************************
-
-"" ESC
-imap jj <ESC>
 
 "" Split
 noremap <Leader>h :<C-u>split<CR>
@@ -411,7 +418,9 @@ if has('autocmd')
 endif
 
 "" Copy/Paste/Cut
-set clipboard=unnamed
+if has('unnamedplus')
+  set clipboard=unnamed,unnamedplus
+endif
 
 noremap YY "+y<CR>
 noremap <leader>p "+gP<CR>
@@ -423,10 +432,6 @@ if has('macunix')
   vmap <C-c> :w !pbcopy<CR><CR>
 endif
 
-nnoremap <F5> :set invpaste paste?<CR>
-set pastetoggle=<F5>
-set showmode
-
 "" Buffer nav
 noremap <leader>z :bp<CR>
 noremap <leader>q :bp<CR>
@@ -435,6 +440,7 @@ noremap <leader>w :bn<CR>
 
 "" Close buffer
 noremap <leader>c :bd<CR>
+noremap <leader>all :BufOnly<CR>
 
 "" Clean search (highlight)
 nnoremap <silent> <leader><space> :noh<cr>
@@ -466,7 +472,7 @@ nnoremap <Leader>o :.Gbrowse<CR>
 function! s:build_go_files()
   let l:file = expand('%')
   if l:file =~# '^\f\+_test\.go$'
-    call go#cmd#Test(0, 1)
+    call go#test#Test(0, 1)
   elseif l:file =~# '^\f\+\.go$'
     call go#cmd#Build(0)
   endif
@@ -491,7 +497,7 @@ let g:go_highlight_array_whitespace_error = 0
 let g:go_highlight_trailing_whitespace_error = 0
 let g:go_highlight_extra_types = 1
 
-autocmd BufNewFile,BufRead *.go setlocal noexpandtab tabstop=2 shiftwidth=2 softtabstop=2
+autocmd BufNewFile,BufRead *.go setlocal noexpandtab tabstop=4 shiftwidth=4 softtabstop=4
 
 augroup completion_preview_close
   autocmd!
@@ -499,6 +505,19 @@ augroup completion_preview_close
     autocmd CompleteDone * if !&previewwindow && &completeopt =~ 'preview' | silent! pclose | endif
   endif
 augroup END
+
+augroup python
+
+  au!
+  au FileType python nmap <Leader>dd <Plug>(pydocstring)
+  au FileType python nmap <leader>tn :TestNearest<cr>
+  au FileType python nmap <leader>tt :TestFile<cr>
+  au FileType python nmap <leader>ts :TestSuite<cr>
+  au filetype python nmap <leader>ts :TestLast<cr>
+  au filetype python nmap <leader>tv :TestVisit<cr>
+
+augroup END
+
 
 augroup go
 
@@ -518,20 +537,48 @@ augroup go
   au FileType go nmap <Leader>i <Plug>(go-info)
   au FileType go nmap <silent> <Leader>l <Plug>(go-metalinter)
   au FileType go nmap <C-g> :GoDecls<cr>
+  au FileType go nmap <leader>dr :GoDeclsDir<cr>
   au FileType go imap <C-g> <esc>:<C-u>GoDecls<cr>
+  au FileType go imap <leader>dr <esc>:<C-u>GoDeclsDir<cr>
   au FileType go nmap <leader>rb :<C-u>call <SID>build_go_files()<CR>
 
 augroup END
 
 
-" javascript
-let g:javascript_enable_domhtmlcss = 1
-
-" vim-javascript
-augroup vimrc-javascript
+" python
+" vim-python
+augroup vimrc-python
   autocmd!
-  autocmd FileType javascript set tabstop=4|set shiftwidth=4|set expandtab softtabstop=4
+  autocmd FileType python setlocal expandtab shiftwidth=4 tabstop=8
+      \ formatoptions+=croq softtabstop=4
+      \ cinwords=if,elif,else,for,while,try,except,finally,def,class,with
 augroup END
+
+" vim-test
+let test#python#runner = 'pytest'
+let test#strategy= "vtr"
+
+" jedi-vim
+let g:jedi#popup_on_dot = 0
+let g:jedi#goto_assignments_command = "<leader>g"
+let g:jedi#goto_definitions_command = "<leader>d"
+let g:jedi#documentation_command = "K"
+let g:jedi#usages_command = "<leader>n"
+let g:jedi#rename_command = "<leader>r"
+let g:jedi#show_call_signatures = "0"
+let g:jedi#completions_command = "<C-Space>"
+let g:jedi#smart_auto_mappings = 0
+
+" syntastic
+let g:syntastic_python_checkers=['python', 'flake8']
+
+" vim-airline
+let g:airline#extensions#virtualenv#enabled = 1
+
+" Syntax highlight
+" Default highlight is better than polyglot
+let g:polyglot_disabled = ['python']
+let python_highlight_all = 1
 
 
 "*****************************************************************************

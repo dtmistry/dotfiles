@@ -1,0 +1,55 @@
+"" ESC
+imap jj <ESC>
+
+""paste toggle
+set pastetoggle=<F5>
+set showmode
+
+" NERDtree - http://vim.sourceforge.net/scripts/script.php?script_id=1658
+nnoremap <silent> <Leader>a :execute ':silent! NERDTreeToggle'<cr>
+fun! InitNERDTree()
+    let isNERDTree = (&ft == 'nerdtree')
+    let dir = (argv() != []) ? fnamemodify(argv()[0], ':h') : expand('%:p:h')
+    sleep 1m
+    if (isNERDTree)
+        :execute ':NERDTree ' . dir
+        :wincmd h
+    else
+        :execute ':NERDTree ' . dir
+        :wincmd l
+    endif
+    :only
+endfun
+au vimenter * call InitNERDTree()
+
+" YCM Options
+let g:ycm_key_list_select_completion = ['<TAB>']
+let g:ycm_key_list_previous_completion = ['<S-TAB>']
+
+" Markdown preview option
+let vim_markdown_preview_github=1
+let vim_markdown_preview_browser='Google Chrome'
+let vim_markdown_preview_toggle=3
+
+" Pymode options
+let g:pymode_options_colorcolumn=0
+
+nnoremap <C-W>O :call MaximizeToggle()<CR>
+nnoremap <C-W>o :call MaximizeToggle()<CR>
+nnoremap <C-W><C-O> :call MaximizeToggle()<CR>
+
+function! MaximizeToggle()
+  if exists("s:maximize_session")
+    exec "source " . s:maximize_session
+    call delete(s:maximize_session)
+    unlet s:maximize_session
+    let &hidden=s:maximize_hidden_save
+    unlet s:maximize_hidden_save
+  else
+    let s:maximize_hidden_save = &hidden
+    let s:maximize_session = tempname()
+    set hidden
+    exec "mksession! " . s:maximize_session
+    only
+  endif
+endfunction
