@@ -25,6 +25,7 @@ au vimenter * call InitNERDTree()
 " YCM Options
 let g:ycm_key_list_select_completion = ['<TAB>']
 let g:ycm_key_list_previous_completion = ['<S-TAB>']
+let g:ycm_auto_trigger = 1
 
 " Markdown preview option
 let vim_markdown_preview_github=1
@@ -53,3 +54,6 @@ function! MaximizeToggle()
     only
   endif
 endfunction
+
+" Search replace confirm
+vnoremap <C-r> "hy:%s/<C-r>h//gc<left><left><left>"

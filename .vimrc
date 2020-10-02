@@ -49,6 +49,7 @@ Plug 'scrooloose/syntastic'
 Plug 'Yggdroot/indentLine'
 Plug 'avelino/vim-bootstrap-updater'
 Plug 'sheerun/vim-polyglot'
+Plug 'ycm-core/YouCompleteMe'
 if isdirectory('/usr/local/opt/fzf')
   Plug '/usr/local/opt/fzf' | Plug 'junegunn/fzf.vim'
 else
@@ -93,8 +94,13 @@ Plug 'fatih/vim-go', {'do': ':GoInstallBinaries'}
 Plug 'davidhalter/jedi-vim'
 Plug 'raimon49/requirements.txt.vim', {'for': 'requirements'}
 Plug 'JamshedVesuna/vim-markdown-preview'
-Plug 'heavenshell/vim-pydocstring'
+Plug 'heavenshell/vim-pydocstring', {'do': 'make install'}
 Plug 'janko-m/vim-test'
+"Plug 'kalekundert/vim-coiled-snake'
+"Plug 'Konfekt/FastFold'
+
+"hcl fmt
+Plug 'fatih/vim-hclfmt'
 
 "*****************************************************************************
 "*****************************************************************************
@@ -259,11 +265,11 @@ cnoreabbrev Qall qall
 
 "" PydocString custom templates
 
-let g:pydocstring_templates_dir = '~/.vim/custom/vim-pydocstring/templates/pydocstring'
+"" let g:pydocstring_templates_dir = '~/.vim/custom/vim-pydocstring/templates/pydocstring'
 
 "" NERDTree configuration
 let g:NERDTreeChDirMode=2
-let g:NERDTreeIgnore=['\.rbc$', '\~$', '\.pyc$', '\.db$', '\.sqlite$', '__pycache__']
+let g:NERDTreeIgnore=['\.rbc$', '\~$', '\.pyc$', '\.db$', '\.sqlite$', '^__pycache__$', '\.egg-info$']
 let g:NERDTreeSortOrder=['^__\.py$', '\/$', '*', '\.swp$', '\.bak$', '\~$']
 let g:NERDTreeShowBookmarks=1
 let g:nerdtree_tabs_focus_on_files=1
@@ -393,9 +399,9 @@ nnoremap <silent> <leader>b :Buffers<CR>
 nnoremap <silent> <leader>e :FZF -m<CR>
 
 " snippets
-let g:UltiSnipsExpandTrigger="<tab>"
-let g:UltiSnipsJumpForwardTrigger="<tab>"
-let g:UltiSnipsJumpBackwardTrigger="<c-b>"
+let g:UltiSnipsExpandTrigger="<C-j>"
+let g:UltiSnipsJumpForwardTrigger="<C-j>"
+let g:UltiSnipsJumpBackwardTrigger="<C-k>"
 let g:UltiSnipsEditSplit="vertical"
 
 " syntastic
@@ -462,6 +468,10 @@ vnoremap K :m '<-2<CR>gv=gv
 "" Open current line on GitHub
 nnoremap <Leader>o :.Gbrowse<CR>
 
+"" replace highlighted
+
+vnoremap <C-r> "hy:%s/<C-r>h//gc<left><left><left>"
+
 "*****************************************************************************
 "" Custom configs
 "*****************************************************************************
@@ -498,6 +508,12 @@ let g:go_highlight_trailing_whitespace_error = 0
 let g:go_highlight_extra_types = 1
 
 autocmd BufNewFile,BufRead *.go setlocal noexpandtab tabstop=4 shiftwidth=4 softtabstop=4
+
+autocmd BufNewFile,BufRead *.rb setlocal noexpandtab tabstop=2 shiftwidth=2 softtabstop=2
+
+autocmd BufNewFile,BufRead *.groovy setlocal tabstop=2 shiftwidth=2 softtabstop=2 expandtab
+
+autocmd BufNewFile,BufRead *.json setlocal tabstop=2 shiftwidth=2 softtabstop=2 expandtab
 
 augroup completion_preview_close
   autocmd!
@@ -559,15 +575,15 @@ let test#python#runner = 'pytest'
 let test#strategy= "vtr"
 
 " jedi-vim
-let g:jedi#popup_on_dot = 0
+let g:jedi#completions_enabled = 0
 let g:jedi#goto_assignments_command = "<leader>g"
 let g:jedi#goto_definitions_command = "<leader>d"
 let g:jedi#documentation_command = "K"
 let g:jedi#usages_command = "<leader>n"
 let g:jedi#rename_command = "<leader>r"
-let g:jedi#show_call_signatures = "0"
+let g:jedi#show_call_signatures = "1"
 let g:jedi#completions_command = "<C-Space>"
-let g:jedi#smart_auto_mappings = 0
+let g:jedi#popup_on_dot = 1
 
 " syntastic
 let g:syntastic_python_checkers=['python', 'flake8']
@@ -577,9 +593,8 @@ let g:airline#extensions#virtualenv#enabled = 1
 
 " Syntax highlight
 " Default highlight is better than polyglot
-let g:polyglot_disabled = ['python']
-let python_highlight_all = 1
-
+" let g:polyglot_disabled = ['python']
+let g:python_highlight_all = 1
 
 "*****************************************************************************
 "*****************************************************************************
@@ -628,3 +643,11 @@ else
   let g:airline_symbols.readonly = ''
   let g:airline_symbols.linenr = ''
 endif
+
+" terraform settings
+let g:hcl_fmt_autosave = 0
+let g:tf_fmt_autosave = 0
+let g:nomad_fmt_autosave = 0
+
+" Spell check for README
+autocmd BufRead,BufNewFile *.md setlocal spell
