@@ -94,10 +94,8 @@ Plug 'fatih/vim-go', {'do': ':GoInstallBinaries'}
 Plug 'davidhalter/jedi-vim'
 Plug 'raimon49/requirements.txt.vim', {'for': 'requirements'}
 Plug 'JamshedVesuna/vim-markdown-preview'
-Plug 'heavenshell/vim-pydocstring', {'do': 'make install'}
+Plug 'kkoomen/vim-doge', { 'do': { -> doge#install() } }
 Plug 'janko-m/vim-test'
-"Plug 'kalekundert/vim-coiled-snake'
-"Plug 'Konfekt/FastFold'
 
 "hcl fmt
 Plug 'fatih/vim-hclfmt'
@@ -193,7 +191,6 @@ else
 
   " IndentLine
   let g:indentLine_enabled = 1
-  let g:indentLine_concealcursor = 0
   let g:indentLine_char = '┆'
   let g:indentLine_faster = 1
 
@@ -267,9 +264,12 @@ cnoreabbrev Qall qall
 
 "" let g:pydocstring_templates_dir = '~/.vim/custom/vim-pydocstring/templates/pydocstring'
 
+"" vim-doge doc generator
+let g:doge_doc_standard_python = 'sphinx'
+
 "" NERDTree configuration
 let g:NERDTreeChDirMode=2
-let g:NERDTreeIgnore=['\.rbc$', '\~$', '\.pyc$', '\.db$', '\.sqlite$', '^__pycache__$', '\.egg-info$']
+let g:NERDTreeIgnore=['\.rbc$', '\~$', '\.pyc$', '\.db$', '\.sqlite$', '^__pycache__$', '\.egg-info$', '^dist']
 let g:NERDTreeSortOrder=['^__\.py$', '\/$', '*', '\.swp$', '\.bak$', '\~$']
 let g:NERDTreeShowBookmarks=1
 let g:nerdtree_tabs_focus_on_files=1
@@ -525,7 +525,7 @@ augroup END
 augroup python
 
   au!
-  au FileType python nmap <Leader>dd <Plug>(pydocstring)
+  au FileType python nmap <Leader>dd :DogeGenerate<cr>
   au FileType python nmap <leader>tn :TestNearest<cr>
   au FileType python nmap <leader>tt :TestFile<cr>
   au FileType python nmap <leader>ts :TestSuite<cr>
@@ -586,7 +586,7 @@ let g:jedi#completions_command = "<C-Space>"
 let g:jedi#popup_on_dot = 1
 
 " syntastic
-let g:syntastic_python_checkers=['python', 'flake8']
+let g:syntastic_python_checkers=['python', 'flake8', 'pylint']
 
 " vim-airline
 let g:airline#extensions#virtualenv#enabled = 1
@@ -595,6 +595,15 @@ let g:airline#extensions#virtualenv#enabled = 1
 " Default highlight is better than polyglot
 " let g:polyglot_disabled = ['python']
 let g:python_highlight_all = 1
+
+" python venv support
+" py3 << EOF
+" import os
+" import sys
+" if 'VIRTUAL_ENV' in os.environ:
+"   project_base_dir = os.environ['VIRTUAL_ENV']
+"   activate_this = os.path.join(project_base_dir, 'bin/activate')
+" EOF
 
 "*****************************************************************************
 "*****************************************************************************
@@ -651,3 +660,6 @@ let g:nomad_fmt_autosave = 0
 
 " Spell check for README
 autocmd BufRead,BufNewFile *.md setlocal spell
+
+" SimpylFold
+let g:SimpylFold_fold_import= 0

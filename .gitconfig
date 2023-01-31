@@ -5,6 +5,7 @@
     rebase = true
 [push]
     default = simple
+    autoSetupRemote = true
 [alias]
     # abbreviations
     rbm = rebase master
@@ -13,6 +14,7 @@
     co = checkout
     ci = commit
     cia = commit --amend
+    cia-e = commit --amend --no-edit
     br = branch
     fpush = push --force
     # watch log
